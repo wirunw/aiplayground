@@ -1,86 +1,149 @@
 <title>คลังคำสั่ง AI Playground</title>
+<meta name="description" content="ชุดคำสั่ง R–T–F พร้อมข้อมูลจำลอง สำหรับฝึกใช้ AI ในงานเภสัชกรรม โดย ดร.ภก.วิรุณ เวชศิริ">
+<meta name="author" content="ดร.ภก.วิรุณ เวชศิริ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 <style>
-/* Layout: one column of dispensing-label cards in agenda order; sticky time strip on top; each card = filled-in Rx label with R/T/F lines and one big copy action */
+/* Layout: single column like a dispensing counter — hero with the instructor's bear, sticky activity chips, then each activity as a filled-in Rx label card with one large copy action; credit card closes the page */
 :root{
-  --paper:#F5F7F4; --card:#FFFFFF; --ink:#18242F; --muted:#5B6873; --line:#DDE3DF;
-  --accent:#0E6E62; --accent-ink:#FFFFFF; --soft:#E3F0EC;
-  --r:#3B4CC0; --t:#0E6E62; --f:#A85A0C; --warn:#9A3412; --warn-bg:#FDF0E7;
+  --paper:#F3F5F9; --card:#FFFFFF; --ink:#16223A; --muted:#566178; --line:#DCE1EA;
+  --navy:#1D2D52; --navy-ink:#FFFFFF; --honey:#D9A13B; --honey-soft:#FBF1DC; --honey-ink:#7A5110;
+  --accent:#1F6F68; --accent-ink:#FFFFFF; --soft:#E2EFEC;
+  --r:#3B4CC0; --t:#1F6F68; --f:#A85A0C; --warn:#9A3412; --warn-bg:#FDF0E7;
+  --hero-a:#1D2D52; --hero-b:#2C4377; --hero-fg:#FFFFFF; --hero-muted:#C9D3EA;
   --display:'Bai Jamjuree','IBM Plex Sans Thai',Tahoma,sans-serif;
   --body:'IBM Plex Sans Thai',Tahoma,'Noto Sans Thai',sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#11181D; --card:#18222A; --ink:#E6ECEA; --muted:#9AA7AF; --line:#2A3740;
-  --accent:#3FB8A5; --accent-ink:#0B1A17; --soft:#1C3330;
-  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17; color-scheme:dark}}
+  --paper:#0F1522; --card:#172033; --ink:#E7EBF3; --muted:#9BA6BD; --line:#2A3550;
+  --navy:#AFC2F0; --navy-ink:#0F1522; --honey:#E8B75A; --honey-soft:#2B2414; --honey-ink:#F1CD86;
+  --accent:#4CC2B3; --accent-ink:#06201C; --soft:#173430;
+  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17;
+  --hero-a:#16233F; --hero-b:#1F3260; --hero-fg:#FFFFFF; --hero-muted:#B9C5E2; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#11181D; --card:#18222A; --ink:#E6ECEA; --muted:#9AA7AF; --line:#2A3740;
-  --accent:#3FB8A5; --accent-ink:#0B1A17; --soft:#1C3330;
-  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17; color-scheme:dark}
+  --paper:#0F1522; --card:#172033; --ink:#E7EBF3; --muted:#9BA6BD; --line:#2A3550;
+  --navy:#AFC2F0; --navy-ink:#0F1522; --honey:#E8B75A; --honey-soft:#2B2414; --honey-ink:#F1CD86;
+  --accent:#4CC2B3; --accent-ink:#06201C; --soft:#173430;
+  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17;
+  --hero-a:#16233F; --hero-b:#1F3260; --hero-fg:#FFFFFF; --hero-muted:#B9C5E2; color-scheme:dark}
 *{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
-.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 64px}
-header.top h1{font-family:var(--display);font-weight:700;font-size:1.75rem;line-height:1.25;margin:0;text-wrap:balance}
-header.top p{margin:.35rem 0 0;color:var(--muted)}
-.rules{display:grid;gap:10px;margin:18px 0 6px}
-.rule{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;font-size:.95rem}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:16px 48px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;border-radius:20px;color:var(--hero-fg);background:linear-gradient(135deg,var(--hero-a),var(--hero-b));padding:22px 20px 0;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:end}
+.hero::before{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(232,183,90,.35),rgba(232,183,90,0) 70%)}
+.hero .txt{position:relative;padding-bottom:20px;min-width:0}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--honey)}
+.hero h1{font-family:var(--display);font-weight:700;font-size:clamp(1.55rem,5.4vw,2.2rem);line-height:1.2;margin:.25rem 0 .45rem;text-wrap:balance}
+.hero p{margin:0;color:var(--hero-muted);font-size:.98rem;max-width:34ch}
+.hero img.bear{position:relative;width:clamp(118px,30vw,176px);height:auto;display:block;align-self:end;filter:drop-shadow(0 6px 14px rgba(0,0,0,.28))}
+.byline{grid-column:1/-1;position:relative;margin:0 -20px;padding:12px 20px;background:rgba(0,0,0,.22);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:.92rem}
+.byline b{font-family:var(--display);font-weight:700;font-size:1.02rem;color:#fff}
+.byline span{color:var(--hero-muted)}
+
+/* how-to */
+.rules{display:grid;gap:10px;margin:16px 0 0}
+.rule{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px;font-size:.95rem}
 .rule b{font-family:var(--display)}
-.rule.warn{background:var(--warn-bg);border-color:transparent;color:var(--ink)}
+.rtf{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rtf span{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;padding:3px 10px 3px 4px;border-radius:999px;background:var(--paper)}
+.rtf i{font-style:normal;font-family:var(--display);font-weight:700;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--card);font-size:.8rem}
+.rule.warn{background:var(--warn-bg);border-color:transparent}
 .rule.warn b{color:var(--warn)}
-nav.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);margin:14px -16px 0;padding:10px 16px;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
-nav.strip a{display:inline-block;margin-right:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:.88rem;font-variant-numeric:tabular-nums}
-nav.strip a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-section.seg{scroll-margin-top:64px;margin-top:30px}
-.seg-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.time{font-family:var(--display);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
-.seg-head h2{font-family:var(--display);font-size:1.3rem;margin:0;line-height:1.3}
-.seg-sub{color:var(--muted);margin:.2rem 0 .8rem;font-size:.95rem}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;margin-top:12px}
+
+/* chips nav */
+nav.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);margin:14px -16px 0;padding:10px 16px;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav.strip::-webkit-scrollbar{display:none}
+nav.strip a{display:inline-flex;align-items:center;gap:6px;margin-right:6px;padding:7px 12px 7px 7px;min-height:38px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:.88rem}
+nav.strip a .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:var(--navy-ink);font-family:var(--display);font-weight:700;font-size:.78rem;font-variant-numeric:tabular-nums}
+nav.strip a.on{border-color:var(--navy)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+
+/* activities */
+section.seg{scroll-margin-top:70px;margin-top:30px}
+.seg-head{display:flex;gap:12px;align-items:flex-start}
+.seg-head .n{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--honey-soft);color:var(--honey-ink);font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
+.seg-head h2{font-family:var(--display);font-size:1.28rem;margin:2px 0 0;line-height:1.3;text-wrap:balance}
+.seg-sub{color:var(--muted);margin:.35rem 0 .6rem 48px;font-size:.93rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;margin-top:12px;box-shadow:0 1px 2px rgba(22,34,58,.05)}
 .card h3{font-family:var(--display);font-size:1.08rem;margin:0}
 .tags{display:flex;gap:6px;flex-wrap:wrap}
-.tag{font-size:.78rem;padding:2px 8px;border-radius:6px;background:var(--soft);color:var(--ink)}
+.tag{font-size:.78rem;padding:2px 9px;border-radius:999px;background:var(--soft);color:var(--ink)}
 .fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .fields label{display:grid;gap:4px;font-size:.88rem;color:var(--muted);min-width:0}
-.fields input,.fields select,.fields textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.fields input,.fields select,.fields textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-height:44px}
 .fields .wide{grid-column:1/-1}
-.label{border:1px dashed var(--line);border-radius:10px;padding:12px;display:grid;gap:8px;min-width:0}
-.ln{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;min-width:0}
+.label{border:1.5px dashed var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;min-width:0;background:linear-gradient(var(--card),var(--card)) padding-box}
+.ln{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;min-width:0}
 .ln .k{font-family:var(--display);font-weight:700;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:var(--card);font-size:.95rem}
-.ln.R .k{background:var(--r)} .ln.T .k{background:var(--t)} .ln.F .k{background:var(--f)} .ln.X .k{background:var(--muted)}
+.ln.R .k,.rtf .R{background:var(--r)} .ln.T .k,.rtf .T{background:var(--t)} .ln.F .k,.rtf .F{background:var(--f)} .ln.X .k,.rtf .X{background:var(--muted)}
 .ln .v{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}
-.ln .v small{display:block;color:var(--muted);font-size:.78rem;letter-spacing:.02em}
+.ln .v small{display:block;color:var(--muted);font-size:.76rem;letter-spacing:.03em}
 .data{font-size:.86rem;color:var(--muted)}
-.data summary{cursor:pointer;color:var(--accent);font-weight:500}
-.data pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--body);font-size:.8rem;max-height:220px;overflow:auto;background:var(--paper);border-radius:8px;padding:10px;margin:6px 0 0}
+.data summary{cursor:pointer;color:var(--accent);font-weight:500;min-height:32px;display:flex;align-items:center}
+.data pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--body);font-size:.8rem;max-height:240px;overflow:auto;background:var(--paper);border-radius:8px;padding:10px;margin:6px 0 0}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button.copy{font:inherit;font-family:var(--display);font-weight:600;font-size:1rem;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:11px 18px;cursor:pointer;min-height:44px}
-button.copy.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.done{font-size:.88rem;color:var(--accent)}
-.tip{font-size:.88rem;color:var(--muted);margin:0}
-.tip b{color:var(--ink)}
+button.copy{font:inherit;font-family:var(--display);font-weight:600;font-size:1rem;background:var(--navy);color:var(--navy-ink);border:0;border-radius:12px;padding:12px 20px;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;gap:8px;transition:transform .12s ease}
+button.copy:active{transform:scale(.98)}
+button.copy svg{width:18px;height:18px}
+button.copy.ok{background:var(--accent);color:var(--accent-ink)}
+button.copy.alt{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.done{font-size:.88rem;color:var(--accent);flex-basis:100%}
+.done:empty{display:none}
+.tip{font-size:.88rem;color:var(--muted);margin:0;padding:10px 12px;border-radius:10px;background:var(--honey-soft)}
+.tip::before{content:"เคล็ดลับ ";font-weight:600;color:var(--honey-ink)}
 textarea.fallback{width:100%;font:inherit;font-size:.85rem;min-height:120px;border:1px solid var(--accent);border-radius:8px;padding:8px;background:var(--paper);color:var(--ink)}
-footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
-@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
-html{scroll-behavior:smooth}
+@media (max-width:520px){
+  .actions button.copy{flex:1 1 100%;justify-content:center}
+  .seg-sub{margin-left:0}
+}
+
+/* credit */
+.credit{margin-top:40px;border-radius:18px;background:var(--card);border:1px solid var(--line);padding:18px;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.credit img{width:88px;height:auto;display:block}
+.credit .who{min-width:0}
+.credit .k{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--honey-ink);font-family:var(--display);font-weight:600}
+.credit h2{font-family:var(--display);font-size:1.25rem;margin:.1rem 0 .1rem;line-height:1.3}
+.credit p{margin:0;color:var(--muted);font-size:.9rem}
+.credit .use{grid-column:1/-1;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+footer.fine{margin-top:14px;color:var(--muted);font-size:.82rem;text-align:center}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 
 <div class="wrap">
-<header class="top">
-  <h1>คลังคำสั่ง AI Playground for Pharmacy</h1>
-  <p>ฝ่ายเภสัชกรรม รพ.ศิริราช · 16 ต.ค. 2569 · กรอกช่องว่าง แล้วกดคัดลอกไปวางใน Gemini</p>
+<header class="hero">
+  <div class="txt">
+    <div class="eyebrow">AI Playground for Pharmacy</div>
+    <h1>คลังคำสั่ง AI สำหรับทีมเภสัชกรรม</h1>
+    <p>เลือกกิจกรรม กรอกช่องว่าง แล้วกดคัดลอกไปวางใน Gemini ข้อมูลจำลองรวมอยู่ในคำสั่งแล้ว</p>
+  </div>
+  <img class="bear" src="__AVATAR__" alt="อ.หมี ตัวการ์ตูนหมีใส่แว่นและเสื้อกาวน์" width="320" height="287" decoding="async">
+  <div class="byline"><b>ดร.ภก.วิรุณ เวชศิริ (อ.หมี)</b><span>ผู้ออกแบบชุดคำสั่งและวิทยากร</span></div>
 </header>
 
 <div class="rules">
-  <div class="rule"><b>สูตร R–T–F</b> ทุกคำสั่งในหน้านี้มี 3 ส่วน: <b style="color:var(--r)">R</b> บทบาทของ AI · <b style="color:var(--t)">T</b> งานที่ให้ทำ · <b style="color:var(--f)">F</b> หน้าตาผลลัพธ์ บางคำสั่งมีส่วนเสริม <b>+</b> คือบริบทหรือข้อห้าม</div>
-  <div class="rule"><b>ส่งผลงานในกลุ่ม LINE ให้ครบ 3 อย่าง</b> ผลงาน (screenshot) · คำสั่งที่ใช้ · 1 จุดที่ AI ทำผิดหรือต้องแก้ ส่งครบได้สิทธิ์ลุ้นรางวัลทันที</div>
+  <div class="rule"><b>ทุกคำสั่งใช้สูตร R–T–F</b>
+    <div class="rtf"><span><i class="R">R</i>บทบาทของ AI</span><span><i class="T">T</i>งานที่ให้ทำ</span><span><i class="F">F</i>หน้าตาผลลัพธ์</span><span><i class="X">+</i>บริบทหรือข้อห้าม</span></div></div>
+  <div class="rule"><b>ส่งผลงานในกลุ่มแชตของห้องให้ครบ 3 อย่าง</b> ผลงาน (screenshot) · คำสั่งที่ใช้ · 1 จุดที่ AI ทำผิดหรือต้องแก้</div>
   <div class="rule warn"><b>ห้ามใส่ข้อมูลผู้ป่วยจริง</b> ข้อมูลทุกชุดในหน้านี้เป็นข้อมูลจำลอง ถ้าจะลองกับงานของตัวเอง ให้ตัดชื่อ HN เลขบัตร และรายละเอียดที่ระบุตัวบุคคลออกก่อนทุกครั้ง</div>
 </div>
 
-<nav class="strip" id="strip"></nav>
+<nav class="strip" id="strip" aria-label="กิจกรรม"></nav>
 <main id="app"></main>
 
-<footer>ข้อมูลทั้งหมดเป็นข้อมูลจำลองเพื่อการอบรม · ผลลัพธ์จาก AI ต้องตรวจทานก่อนนำไปใช้จริงทุกครั้ง · ดร.ภก.วิรุณ เวชศิริ</footer>
+<section class="credit" aria-label="ผู้จัดทำ">
+  <img src="__AVATAR__" alt="" width="320" height="287" loading="lazy" decoding="async">
+  <div class="who">
+    <div class="k">ออกแบบและเรียบเรียงโดย</div>
+    <h2>ดร.ภก.วิรุณ เวชศิริ</h2>
+    <p>อาจารย์ประจำคณะเภสัชศาสตร์ มหาวิทยาลัยธรรมศาสตร์ · CEO, Pharm Connection (Thailand)</p>
+  </div>
+  <div class="use">นำไปใช้สอนหรือแชร์ต่อได้ โปรดให้เครดิต "ดร.ภก.วิรุณ เวชศิริ" ทุกครั้ง</div>
+</section>
+<footer class="fine">ข้อมูลทั้งหมดเป็นข้อมูลจำลองเพื่อการอบรม · ผลลัพธ์จาก AI ต้องตรวจทานก่อนนำไปใช้จริงทุกครั้ง</footer>
 </div>
 
 <script>
@@ -171,7 +234,7 @@ const SEGMENTS = [
   {title:'มีโน้ตบุ๊ก: เอกสารเป็นสไลด์ใน Gemini Notebook', tool:['Gemini Notebook'],
    fields:[f('topic2','หัวข้อ','select',Object.keys(EDU))],
    build:v=>({lines:[['R','เภสัชกรผู้สอนการใช้ยาให้ผู้ป่วยกลุ่มเล็ก'],['T',`ทำโครงสไลด์สอนเรื่อง "${v.topic2}" จากแหล่งข้อมูลที่อัปโหลด`],['F','6 สไลด์ แต่ละสไลด์มีหัวข้อ ข้อความไม่เกิน 3 บรรทัด และคำแนะนำภาพประกอบ 1 ภาพ'],['X','ใช้เฉพาะเนื้อหาจากแหล่งข้อมูล ถ้าเนื้อหาไม่พอให้บอกว่าขาดอะไร']]}),
-   tip:'อัปโหลดเอกสาร 05 จากกลุ่ม LINE เป็นแหล่งข้อมูลก่อน แล้วค่อยวางคำสั่ง'}
+   tip:'อัปโหลดเอกสาร 05 จากกลุ่มแชตของห้อง เป็นแหล่งข้อมูลก่อน แล้วค่อยวางคำสั่ง'}
  ]},
  {id:'song', time:'13.00', title:'เปลี่ยนกลอนเป็นเพลง', sub:'ทางเลือก ไม่บังคับ · วางกลอนแล้วแอปจะจัดเป็นท่อนเพลงให้เองโดยใช้คำเดิมทุกคำ · ต้องอายุ 18+ และเปิด "เก็บกิจกรรมไว้" · บางบัญชีได้เพลงสั้นราว 30 วินาที · ภาษาไทยยังไม่อยู่ในรายชื่อภาษาที่รองรับอย่างเป็นทางการ เสียงร้องอาจเพี้ยน', cards:[
   {title:'สร้างเพลงจากกลอน (ร้องตามคำเดิม)', tool:['Gemini','สร้างเพลง'],
@@ -226,7 +289,7 @@ const SEGMENTS = [
    tip:'ลองกรอกตัวเลขที่รู้คำตอบอยู่แล้วว่าแอปคำนวณถูกไหม'},
   {title:'สำหรับผู้ที่อยากลอง: แอปค่าฝุ่นก่อนออกเวร', tool:['Gemini','Canvas','API'],
    build:()=>({lines:[['R','นักพัฒนาเว็บแอปด้านสุขภาพ'],['T','ใช้ Canvas สร้างเว็บแอปชื่อ "ฝุ่นวันนี้ก่อนออกเวร" ดึงค่า PM2.5 ปัจจุบันของกรุงเทพฯ จาก API นี้: https://air-quality-api.open-meteo.com/v1/air-quality?latitude=13.7563&longitude=100.5018&current=pm2_5,us_aqi&hourly=pm2_5&timezone=Asia/Bangkok&forecast_days=1'],['F','การ์ดตัวเลข PM2.5 ตัวใหญ่ · คำแนะนำว่าควรใส่หน้ากากหรือไม่ · กราฟรายชั่วโมงวันนี้ · ภาษาไทย'],['X','ใส่ที่มุมล่างว่า "ข้อมูลจาก Open-Meteo / CAMS เป็นค่าพยากรณ์ ไม่ใช่สถานีวัด"']]}),
-   tip:'API ไม่ตอบ ให้ขอไฟล์ 04 ในกลุ่ม LINE แล้วสั่งว่า "ใช้ข้อมูลนี้แทนการดึง API"'}
+   tip:'API ไม่ตอบ ให้ขอไฟล์ 04 ในกลุ่มแชตของห้อง แล้วสั่งว่า "ใช้ข้อมูลนี้แทนการดึง API"'}
  ]},
  {id:'work', time:'14.45', title:'งานประจำของฉัน AI ช่วยตรงไหน', sub:'แตกงานของตัวเอง 1 งาน ว่าส่วนไหน AI ช่วยได้ ส่วนไหนต้องให้เภสัชกรตรวจ', cards:[
   {title:'บัตรงานของฉัน', tool:['Gemini'],
@@ -248,7 +311,7 @@ const toText = lines => lines.map(([k,v]) => `${NAMES[k]}: ${v}`).join('\n\n');
 
 async function copyText(text, btn, holder){
   const done = holder.querySelector('.done');
-  try { await navigator.clipboard.writeText(text); done.textContent = 'คัดลอกแล้ว วางใน Gemini ได้เลย'; }
+  try { await navigator.clipboard.writeText(text); done.textContent = 'คัดลอกแล้ว วางใน Gemini ได้เลย'; btn.classList.add('ok'); setTimeout(()=>btn.classList.remove('ok'),1800); }
   catch(e){
     let ta = holder.querySelector('textarea.fallback');
     if(!ta){ ta = document.createElement('textarea'); ta.className='fallback'; ta.readOnly = true; holder.after(ta); }
@@ -273,7 +336,7 @@ function renderCard(seg, card, ci){
       return `<label for="${id}">${esc(fd.label)}<input id="${id}" data-f="${fd.id}" value="${esc(vals[fd.id])}"></label>`;
     }).join('')}</div>` : ''}
     <div class="label"></div>
-    <div class="actions"><button class="copy main" type="button">คัดลอกคำสั่ง</button>${card.extra?`<button class="copy alt" type="button">${esc(card.extra.label)}</button>`:''}<span class="done" aria-live="polite"></span></div>
+    <div class="actions"><button class="copy main" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>คัดลอกคำสั่ง</button>${card.extra?`<button class="copy alt" type="button">${esc(card.extra.label)}</button>`:''}<span class="done" aria-live="polite"></span></div>
     ${card.tip?`<p class="tip">${esc(card.tip)}</p>`:''}`;
   const labelBox = el.querySelector('.label');
   const draw = () => {
@@ -294,9 +357,12 @@ function renderCard(seg, card, ci){
 const app = document.getElementById('app'), strip = document.getElementById('strip');
 SEGMENTS.forEach(seg => {
   const s = document.createElement('section'); s.className='seg'; s.id = seg.id;
-  s.innerHTML = `<div class="seg-head"><span class="time">${seg.time}</span><h2>${esc(seg.title)}</h2></div>${seg.sub?`<p class="seg-sub">${esc(seg.sub)}</p>`:''}`;
+  const no = SEGMENTS.indexOf(seg)+1;
+  s.innerHTML = `<div class="seg-head"><span class="n">${no}</span><h2>${esc(seg.title)}</h2></div>${seg.sub?`<p class="seg-sub">${esc(seg.sub)}</p>`:''}`;
   seg.cards.forEach((c,i) => s.appendChild(renderCard(seg, c, i)));
   app.appendChild(s);
-  const a = document.createElement('a'); a.href = '#'+seg.id; a.textContent = `${seg.time} ${seg.title.replace(/^โจทย์ที่ (\d).*/,'โจทย์ $1')}`; strip.appendChild(a);
+  const a = document.createElement('a'); a.href = '#'+seg.id; a.innerHTML = `<span class="n">${no}</span>${esc(seg.title.replace(/^โจทย์ที่ (\d).*/,'โจทย์ $1'))}`; strip.appendChild(a);
 });
+
+try{const links=[...strip.querySelectorAll('a')];const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));const on=strip.querySelector('a.on');if(on)on.scrollIntoView({block:'nearest',inline:'center'});}})},{rootMargin:'-40% 0px -55% 0px'});document.querySelectorAll('section.seg').forEach(s=>io.observe(s));}catch(e){}
 </script>
