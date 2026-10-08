@@ -1,0 +1,54 @@
+{
+ "_หมายเหตุ": "บันทึกจริงจาก API ราคาน้ำมันบางจาก (oil-price.bangchak.co.th/ApiOilPrice2/th) เมื่อ 8 ต.ค. 2569 ตัดเหลือเฉพาะชื่อและราคา ใช้สาธิตการวางข้อมูลให้ AI สรุป เพราะแอปที่สร้างใน Canvas ดึง API นี้ตรงไม่ได้ (ไม่มี CORS header)",
+ "OilPriceDate": "01/10/2569",
+ "OilList": [
+  {
+   "OilName": "ดีเซล B20",
+   "PriceYesterday": 36.44,
+   "PriceToday": 37.19,
+   "PriceTomorrow": 37.19
+  },
+  {
+   "OilName": "ไฮดีเซล S",
+   "PriceYesterday": 41.44,
+   "PriceToday": 42.19,
+   "PriceTomorrow": 42.19
+  },
+  {
+   "OilName": "ไฮ พรีเมียม ดีเซล พลัส",
+   "PriceYesterday": 50.05,
+   "PriceToday": 50.05,
+   "PriceTomorrow": 50.05
+  },
+  {
+   "OilName": "ไฮ พรีเมียม 98 พลัส",
+   "PriceYesterday": 49.29,
+   "PriceToday": 49.29,
+   "PriceTomorrow": 49.29
+  },
+  {
+   "OilName": "แก๊สโซฮอล์ E85 S EVO",
+   "PriceYesterday": 30.88,
+   "PriceToday": 31.63,
+   "PriceTomorrow": 31.63
+  },
+  {
+   "OilName": "แก๊สโซฮอล์ E20 S EVO",
+   "PriceYesterday": 34.94,
+   "PriceToday": 35.69,
+   "PriceTomorrow": 35.69
+  },
+  {
+   "OilName": "แก๊สโซฮอล์ 91 S EVO",
+   "PriceYesterday": 39.57,
+   "PriceToday": 40.32,
+   "PriceTomorrow": 40.32
+  },
+  {
+   "OilName": "แก๊สโซฮอล์ 95 S EVO",
+   "PriceYesterday": 39.94,
+   "PriceToday": 40.69,
+   "PriceTomorrow": 40.69
+  }
+ ]
+}

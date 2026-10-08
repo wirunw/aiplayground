@@ -1,0 +1,302 @@
+<title>คลังคำสั่ง AI Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column of dispensing-label cards in agenda order; sticky time strip on top; each card = filled-in Rx label with R/T/F lines and one big copy action */
+:root{
+  --paper:#F5F7F4; --card:#FFFFFF; --ink:#18242F; --muted:#5B6873; --line:#DDE3DF;
+  --accent:#0E6E62; --accent-ink:#FFFFFF; --soft:#E3F0EC;
+  --r:#3B4CC0; --t:#0E6E62; --f:#A85A0C; --warn:#9A3412; --warn-bg:#FDF0E7;
+  --display:'Bai Jamjuree','IBM Plex Sans Thai',Tahoma,sans-serif;
+  --body:'IBM Plex Sans Thai',Tahoma,'Noto Sans Thai',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11181D; --card:#18222A; --ink:#E6ECEA; --muted:#9AA7AF; --line:#2A3740;
+  --accent:#3FB8A5; --accent-ink:#0B1A17; --soft:#1C3330;
+  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11181D; --card:#18222A; --ink:#E6ECEA; --muted:#9AA7AF; --line:#2A3740;
+  --accent:#3FB8A5; --accent-ink:#0B1A17; --soft:#1C3330;
+  --r:#9DA8FF; --t:#5CCFBC; --f:#F0A65A; --warn:#F7A27A; --warn-bg:#2E1F17; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 64px}
+header.top h1{font-family:var(--display);font-weight:700;font-size:1.75rem;line-height:1.25;margin:0;text-wrap:balance}
+header.top p{margin:.35rem 0 0;color:var(--muted)}
+.rules{display:grid;gap:10px;margin:18px 0 6px}
+.rule{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;font-size:.95rem}
+.rule b{font-family:var(--display)}
+.rule.warn{background:var(--warn-bg);border-color:transparent;color:var(--ink)}
+.rule.warn b{color:var(--warn)}
+nav.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);margin:14px -16px 0;padding:10px 16px;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav.strip a{display:inline-block;margin-right:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-size:.88rem;font-variant-numeric:tabular-nums}
+nav.strip a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section.seg{scroll-margin-top:64px;margin-top:30px}
+.seg-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.time{font-family:var(--display);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.seg-head h2{font-family:var(--display);font-size:1.3rem;margin:0;line-height:1.3}
+.seg-sub{color:var(--muted);margin:.2rem 0 .8rem;font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;margin-top:12px}
+.card h3{font-family:var(--display);font-size:1.08rem;margin:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:.78rem;padding:2px 8px;border-radius:6px;background:var(--soft);color:var(--ink)}
+.fields{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.fields label{display:grid;gap:4px;font-size:.88rem;color:var(--muted);min-width:0}
+.fields input,.fields select,.fields textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.fields .wide{grid-column:1/-1}
+.label{border:1px dashed var(--line);border-radius:10px;padding:12px;display:grid;gap:8px;min-width:0}
+.ln{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;min-width:0}
+.ln .k{font-family:var(--display);font-weight:700;width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:var(--card);font-size:.95rem}
+.ln.R .k{background:var(--r)} .ln.T .k{background:var(--t)} .ln.F .k{background:var(--f)} .ln.X .k{background:var(--muted)}
+.ln .v{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}
+.ln .v small{display:block;color:var(--muted);font-size:.78rem;letter-spacing:.02em}
+.data{font-size:.86rem;color:var(--muted)}
+.data summary{cursor:pointer;color:var(--accent);font-weight:500}
+.data pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--body);font-size:.8rem;max-height:220px;overflow:auto;background:var(--paper);border-radius:8px;padding:10px;margin:6px 0 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button.copy{font:inherit;font-family:var(--display);font-weight:600;font-size:1rem;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:11px 18px;cursor:pointer;min-height:44px}
+button.copy.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.done{font-size:.88rem;color:var(--accent)}
+.tip{font-size:.88rem;color:var(--muted);margin:0}
+.tip b{color:var(--ink)}
+textarea.fallback{width:100%;font:inherit;font-size:.85rem;min-height:120px;border:1px solid var(--accent);border-radius:8px;padding:8px;background:var(--paper);color:var(--ink)}
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <h1>คลังคำสั่ง AI Playground for Pharmacy</h1>
+  <p>ฝ่ายเภสัชกรรม รพ.ศิริราช · 16 ต.ค. 2569 · กรอกช่องว่าง แล้วกดคัดลอกไปวางใน Gemini</p>
+</header>
+
+<div class="rules">
+  <div class="rule"><b>สูตร R–T–F</b> ทุกคำสั่งในหน้านี้มี 3 ส่วน: <b style="color:var(--r)">R</b> บทบาทของ AI · <b style="color:var(--t)">T</b> งานที่ให้ทำ · <b style="color:var(--f)">F</b> หน้าตาผลลัพธ์ บางคำสั่งมีส่วนเสริม <b>+</b> คือบริบทหรือข้อห้าม</div>
+  <div class="rule"><b>ส่งผลงานในกลุ่ม LINE ให้ครบ 3 อย่าง</b> ผลงาน (screenshot) · คำสั่งที่ใช้ · 1 จุดที่ AI ทำผิดหรือต้องแก้ ส่งครบได้สิทธิ์ลุ้นรางวัลทันที</div>
+  <div class="rule warn"><b>ห้ามใส่ข้อมูลผู้ป่วยจริง</b> ข้อมูลทุกชุดในหน้านี้เป็นข้อมูลจำลอง ถ้าจะลองกับงานของตัวเอง ให้ตัดชื่อ HN เลขบัตร และรายละเอียดที่ระบุตัวบุคคลออกก่อนทุกครั้ง</div>
+</div>
+
+<nav class="strip" id="strip"></nav>
+<main id="app"></main>
+
+<footer>ข้อมูลทั้งหมดเป็นข้อมูลจำลองเพื่อการอบรม · ผลลัพธ์จาก AI ต้องตรวจทานก่อนนำไปใช้จริงทุกครั้ง · ดร.ภก.วิรุณ เวชศิริ</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const EDU = {
+ 'ยาพ่นสูดชนิดกดพ่น (MDI)': `การใช้ยาพ่นสูดชนิดกดพ่น (MDI)
+ก่อนใช้: เปิดฝาครอบ ตรวจปากกระบอกให้สะอาด เขย่าหลอดยาก่อนใช้ทุกครั้ง (ยกเว้นยาที่ฉลากระบุว่าไม่ต้องเขย่า) ถ้าเป็นหลอดใหม่หรือไม่ได้ใช้นาน ให้กดพ่นทิ้งตามจำนวนครั้งที่ฉลากกำหนด
+ขั้นตอน: 1) นั่งหรือยืนตัวตรง หายใจออกให้สุดโดยไม่เป่าใส่กระบอก 2) อมปากกระบอกให้สนิท 3) เริ่มหายใจเข้าทางปากช้า ๆ แล้วกดยา 1 ครั้งพร้อมกัน 4) หายใจเข้าช้าและลึกต่อจนสุด 5) กลั้นหายใจประมาณ 10 วินาทีหรือนานเท่าที่ทำได้ แล้วค่อย ๆ หายใจออก 6) ถ้าต้องพ่นซ้ำ รอประมาณ 30–60 วินาที
+หลังใช้: ยาที่มีสเตียรอยด์ให้บ้วนปากกลั้วคอแล้วบ้วนทิ้ง ปิดฝาทุกครั้ง ทำความสะอาดตัวกระบอกพลาสติกตามคำแนะนำผู้ผลิต ห้ามนำหลอดยาไปล้างน้ำ ดูตัวนับจำนวนครั้งที่เหลือ
+เคล็ดลับ: ผู้ที่กดพร้อมหายใจเข้าไม่ทัน เช่น เด็กหรือผู้สูงอายุ ควรใช้กระบอกช่วยพ่น (spacer)
+ควรรีบพบแพทย์: ต้องใช้ยาบรรเทาอาการบ่อยขึ้น ตื่นกลางดึกเพราะหอบ หอบไม่ดีขึ้นหลังพ่นยา พูดไม่เป็นประโยค หรือริมฝีปากเขียว ให้ไปห้องฉุกเฉินทันที`,
+ 'การเก็บรักษาอินซูลิน': `การเก็บรักษาอินซูลิน
+ยังไม่เปิดใช้: เก็บในตู้เย็นช่องธรรมดา 2–8 องศาเซลเซียส วางชั้นกลาง ห่างจากช่องแช่แข็งและผนังด้านใน ห้ามแช่แข็ง ถ้าเคยแข็งตัวห้ามใช้แม้ละลายแล้ว ใช้ได้ถึงวันหมดอายุบนกล่องเมื่อเก็บถูกวิธี
+เปิดใช้แล้ว: เก็บที่อุณหภูมิห้องไม่เกิน 30 องศาเซลเซียสได้ตามระยะที่ฉลากกำหนด ซึ่งต่างกันตามชนิด บางชนิดประมาณ 2 สัปดาห์ บางชนิด 4–6 สัปดาห์ เขียนวันที่เปิดใช้ไว้ ครบกำหนดให้ทิ้งแม้ยายังเหลือ ถอดเข็มออกหลังฉีดทุกครั้ง เก็บให้พ้นแสงแดด
+ห้ามวาง: ในรถที่จอดกลางแดด ใกล้เตาหรือหน้าต่างที่แดดส่อง หรือสัมผัสน้ำแข็งโดยตรง
+เดินทาง: ใส่กระเป๋าเก็บความเย็นโดยไม่ให้สัมผัสน้ำแข็งหรือเจลเย็นโดยตรง เดินทางโดยเครื่องบินให้ถือขึ้นเครื่อง ไม่โหลดใต้ท้องเครื่อง
+ตรวจก่อนใช้: ชนิดใสต้องใสไม่มีตะกอน ชนิดขุ่นให้คลึงเบา ๆ จนขุ่นสม่ำเสมอ ถ้ามีก้อน เกล็ด หรือเกาะผนัง ห้ามใช้`,
+ 'ยาก่อนอาหาร หลังอาหาร และก่อนนอน': `การรับประทานยาก่อนอาหาร หลังอาหาร และก่อนนอน
+ก่อนอาหาร: รับประทานตอนท้องว่าง โดยทั่วไปประมาณ 30 นาทีก่อนอาหาร เพราะอาหารอาจลดการดูดซึมยา
+หลังอาหาร: รับประทานหลังอาหารทันทีหรือภายใน 15–30 นาที เพื่อลดการระคายเคืองกระเพาะอาหาร
+พร้อมอาหาร: รับประทานพร้อมอาหารคำแรก ๆ หรือระหว่างมื้อ
+ก่อนนอน: รับประทานก่อนเข้านอนประมาณ 15–30 นาที
+ข้อควรรู้: ยาบางชนิดไม่ควรรับประทานพร้อมนม ยาลดกรด แคลเซียม หรือธาตุเหล็ก ให้สอบถามเภสัชกร ถ้าลืมรับประทานและนึกได้ไม่นาน ให้รับประทานทันที ถ้าใกล้มื้อถัดไปแล้วให้ข้ามมื้อที่ลืม ห้ามรับประทานเพิ่มเป็น 2 เท่า (ยาบางชนิดมีคำแนะนำเฉพาะ) ผู้ใช้ยาเบาหวานที่งดอาหารบางมื้อควรปรึกษาแพทย์หรือเภสัชกร ยึดตามฉลากยาและคำแนะนำของแพทย์หรือเภสัชกรเป็นหลัก`
+};
+
+
+// แยกกลอนเป็นวรรค แล้วจัดเป็นท่อนเพลงโดยใช้คำเดิมทุกคำ
+function toLyrics(poem, short){
+  const raw=(poem||'').trim();
+  if(!raw) return {ok:false};
+  if(/\[(Verse|Chorus|Pre-Chorus|Outro|Bridge)/i.test(raw)) return {ok:true,text:raw};
+  const w=raw.split(/\n/).flatMap(l=>l.split(/\t+|\s{2,}|\s*[\/|]\s*/)).map(s=>s.trim()).filter(s=>s && !/^\(.*\)$/.test(s));
+  if(w.length!==8 && w.length!==12) return {ok:false};
+  const n=w.length, ch=[w[n-2],w[n-1]];
+  if(short) return {ok:true,text:['[Chorus]',...ch,...ch].join('\n')};
+  const parts=['[Intro]','(ดนตรีบรรเลงสั้น ๆ)','','[Verse 1]',...w.slice(0,4)];
+  if(n===12) parts.push('','[Verse 2]',...w.slice(4,8));
+  parts.push('','[Pre-Chorus]',w[n-4],w[n-3],'','[Chorus]',...ch,...ch,'','[Instrumental]','','[Pre-Chorus]',w[n-4],w[n-3],'','[Chorus]',...ch,'','[Outro]',w[n-1]);
+  return {ok:true,text:parts.join('\n')};
+}
+const f = (id, label, type, opts) => ({id, label, type, opts});
+const SEGMENTS = [
+ {id:'prompt', time:'09.40', title:'สั่ง AI ให้ตรงใจ', sub:'ลองคำสั่งแบบสั้นกับแบบ R–T–F แล้วเทียบผล', cards:[
+  {title:'ก่อน–หลัง: คำสั่งเดียวกัน สองแบบ', tool:['Gemini'],
+   build:()=>({lines:[['R','เภสัชกรโรงพยาบาลที่ถนัดอธิบายเรื่องยาให้ผู้สูงอายุเข้าใจง่าย'],['T','อธิบายวิธีเก็บยาที่บ้านให้ปลอดภัย สำหรับผู้สูงอายุที่ใช้ยาหลายชนิด'],['F','ข้อแนะนำ 5 ข้อ ข้อละไม่เกิน 2 บรรทัด ภาษาง่าย ไม่ใช้ศัพท์เทคนิค ปิดท้ายด้วย 1 ประโยคเตือนให้ถามเภสัชกรเมื่อสงสัย'],['X','ก่อนตอบ ถ้าข้อมูลไม่พอให้ถามกลับ 1 คำถาม และตรวจคำตอบของตัวเองก่อนส่ง']]}),
+   extra:{label:'คัดลอกแบบสั้น (ไว้เทียบ)', text:'ช่วยบอกวิธีเก็บยาที่บ้านหน่อย'},
+   tip:'วางแบบสั้นก่อน แล้วเปิดแชตใหม่วางแบบ R–T–F เทียบกันว่าต่างกันตรงไหน'}
+ ]},
+ {id:'c1', time:'09.40', title:'โจทย์ที่ 1 เภสัชกรในแบบฉัน', sub:'ตัวการ์ตูนจากคำบรรยาย (ไม่ใช้รูปถ่าย) และกลอนแปดประจำตัว · สร้างภาพได้ไม่เกิน 3 ครั้งต่อคน', cards:[
+  {title:'ตัวการ์ตูนเภสัชกรของฉัน', tool:['Gemini','สร้างภาพ'],
+   fields:[f('g','เพศ','select',['หญิง','ชาย','ไม่ระบุเพศ']),f('age','ช่วงวัย','select',['วัยทำงานตอนต้น','วัยทำงานตอนกลาง','วัยผู้ใหญ่ ใจดี มีประสบการณ์']),
+     f('hair','ลักษณะผม','text','ผมสั้นประบ่า สีดำ'),f('glass','แว่นตา/เครื่องประดับ','text','แว่นกรอบกลมสีชมพู'),
+     f('item','ถือของอะไร','text','แท็บเล็ตกับขวดยา'),f('style','สไตล์ภาพ','select',['การ์ตูน 3 มิติน่ารัก','ภาพสีน้ำ','อนิเมะ','ลายเส้นมินิมอล']),
+     f('bg','ฉากหลัง','text','ห้องยาโรงพยาบาลที่สะอาดสว่าง')],
+   build:v=>({lines:[['R','นักวาดภาพประกอบตัวการ์ตูนสำหรับสื่อสุขภาพ'],
+     ['T',`วาดตัวการ์ตูนเภสัชกร${v.g==='ไม่ระบุเพศ'?'':v.g} ${v.age} ${v.hair} ใส่${v.glass} สวมเสื้อกาวน์สีขาวสะอาด ถือ${v.item} ยิ้มอย่างเป็นมิตร ฉากหลังเป็น${v.bg}`],
+     ['F',`สไตล์${v.style} ภาพแนวตั้ง สัดส่วน 3:4 เห็นครึ่งตัว แสงนุ่ม สีสดใส`],
+     ['X','ห้ามมีตัวหนังสือหรือโลโก้ใด ๆ ในภาพ และไม่อ้างอิงหน้าตาบุคคลจริง']]}),
+   tip:'อยากให้เหมือนตัวเองขึ้น พิมพ์ต่อในแชตเดิม เช่น "ปรับให้ผมยาวขึ้น" ไม่ต้องเริ่มใหม่'},
+  {title:'กลอนแปดประจำตัว', tool:['Gemini'],
+   fields:[f('nick','ชื่อเล่น','text','น้ำ'),f('job','งานที่ทำ','text','จ่ายยาผู้ป่วยนอก'),f('proud','สิ่งที่ภูมิใจในงาน','text','อธิบายยาจนคุณยายเข้าใจ'),f('like','นิสัยหรือสิ่งที่ชอบ','text','ชอบกาแฟ ยิ้มง่าย'),
+     f('wish','สิ่งที่อยากฝากไว้ตอนจบ','text','อยากให้ผู้ป่วยหายดีและกลับบ้านอย่างอุ่นใจ'),f('plen','ความยาว','select',['2 บท (8 วรรค)','3 บท (12 วรรค)'])],
+   build:v=>{const three=v.plen.startsWith('3');
+    return {lines:[['R','กวีที่แต่งกลอนแปดถูกฉันทลักษณ์ ใช้ภาษางามแต่เข้าใจง่าย และเข้าใจชีวิตเภสัชกรโรงพยาบาล'],
+     ['T',`แต่งกลอนแปด ${v.plen} แนะนำตัวเภสัชกรชื่อเล่น "${v.nick}" ทำงาน${v.job} ภูมิใจที่${v.proud} นิสัย${v.like} `+
+       (three?'เรียงเรื่องเป็น บทที่ 1 แนะนำตัวและงาน บทที่ 2 เล่าเรื่องที่ภูมิใจ บทที่ 3 ':'เรียงเรื่องเป็น บทที่ 1 แนะนำตัว งาน และนิสัย บทที่ 2 เล่าเรื่องที่ภูมิใจ แล้ว')+`ปิดท้ายด้วยสิ่งที่อยากฝาก คือ ${v.wish}`],
+     ['F','แสดงกลอนบรรทัดละ 1 วรรค เว้น 1 บรรทัดระหว่างบท แล้วตามด้วยตารางสั้น ๆ ว่าคำไหนส่งสัมผัสกับคำไหน ทั้งในบทและระหว่างบท ท้ายสุดเสนอวรรคปิดท้ายสำรองอีก 2 แบบให้เลือก'],
+     ['X','วรรคสุดท้ายของบทสุดท้ายต้องงามที่สุด: จบด้วยภาพหรือความรู้สึกที่คนฟังเห็นภาพได้ ไม่ใช่คำอธิบายหรือคำสอน มีสัมผัสในอย่างน้อย 1 คู่ คำท้ายวรรคเป็นเสียงสามัญหรือตรี เลี่ยงคำเกร่อ เช่น "ด้วยหัวใจ" "เต็มใจ" "สู้ต่อไป"'],
+     ['X','ตรวจสัมผัสนอก สัมผัสระหว่างบท และเสียงท้ายวรรคตามขนบก่อนส่ง วรรคละ 7–9 คำ ถ้าตรงไหนไม่แน่ใจให้บอกตรง ๆ']]}},
+   tip:'ลองนับสัมผัสเอง ถ้า AI ผิด นี่คือ "1 จุดที่ AI ผิด" ที่ส่งในกลุ่มได้เลย ชอบวรรคปิดท้ายแบบไหนก็สั่งให้สลับได้ เก็บกลอนไว้ทำเพลงช่วงบ่าย'}
+ ]},
+ {id:'tools', time:'10.45', title:'งานแบบไหนใช้ AI ตัวไหน', sub:'วางคำสั่งเดียวกันใน 2–3 เครื่องมือ แล้วเทียบผล', cards:[
+  {title:'คำสั่งสำหรับเทียบเครื่องมือ', tool:['Gemini','ChatGPT','Claude'],
+   build:()=>({lines:[['R','เภสัชกรผู้เชี่ยวชาญด้านการให้คำปรึกษาเรื่องยา'],['T','อธิบายความต่างระหว่างยาก่อนอาหาร หลังอาหาร และพร้อมอาหาร พร้อมยกตัวอย่างกลุ่มยาที่มักต้องกินก่อนอาหาร'],['F','ตาราง 3 แถว (ความหมาย / เหตุผล / ตัวอย่าง) แล้วสรุป 3 บรรทัดสำหรับผู้ป่วย'],['X','ระบุแหล่งอ้างอิงที่ตรวจสอบได้ ถ้าไม่แน่ใจข้อไหนให้บอก']]}),
+   tip:'เทียบ 3 เรื่อง: ความถูกต้อง · มีแหล่งอ้างอิงจริงไหม · ภาษาเหมาะกับผู้ป่วยไหม'}
+ ]},
+ {id:'c2', time:'11.10', title:'โจทย์ที่ 2 อินโฟกราฟิกความรู้สำหรับผู้ป่วย', sub:'ทำใน Canvas ให้ตัวหนังสือไทยสะกดถูก แล้วส่ง screenshot', cards:[
+  {title:'อินโฟกราฟิก 1 หน้า (Canvas)', tool:['Gemini','Canvas'], data:'edu',
+   fields:[f('topic','เลือกหัวข้อ','select',Object.keys(EDU)),f('aud','ผู้อ่าน','select',['ผู้สูงอายุ','ผู้ป่วยทั่วไป','ญาติผู้ดูแล']),f('tone','โทนสี','text','ฟ้าอ่อนกับขาว')],
+   build:v=>({lines:[['R','เภสัชกรผู้ออกแบบสื่อความรู้สำหรับผู้ป่วย'],
+     ['T',`ใช้ Canvas สร้างอินโฟกราฟิก 1 หน้า เรื่อง "${v.topic}" สำหรับ${v.aud} จากเอกสารด้านล่างเท่านั้น`],
+     ['F',`หน้าเว็บแนวตั้งขนาด A4 · หัวเรื่อง 1 บรรทัดดึงดูด · ขั้นตอนหรือข้อควรทำไม่เกิน 6 ข้อพร้อมไอคอน · กล่องเตือน "ควรรีบพบแพทย์เมื่อ" · ตัวอักษรไทยใหญ่อ่านง่าย · โทน${v.tone}`],
+     ['X','ห้ามเพิ่มชื่อยา ขนาดยา หรือข้อมูลที่ไม่มีในเอกสาร ห้ามสร้างเป็นรูปภาพ ให้เป็นหน้าเว็บที่มีตัวหนังสือจริง'],
+     ['D',`เอกสาร:\n${EDU[v.topic]}`]]}),
+   extra:{label:'คัดลอกแบบสร้างเป็นภาพ (ไว้เทียบ)', build:v=>`สร้างภาพอินโฟกราฟิกภาษาไทย เรื่อง "${v.topic}" สำหรับ${v.aud} โทน${v.tone}`},
+   tip:'ถ้าไม่เห็น Canvas ในแอปมือถือ ให้เปิด gemini.google.com ในเบราว์เซอร์ ลองแบบสร้างเป็นภาพเทียบ แล้วนับคำที่สะกดผิด'},
+  {title:'มีโน้ตบุ๊ก: เอกสารเป็นสไลด์ใน Gemini Notebook', tool:['Gemini Notebook'],
+   fields:[f('topic2','หัวข้อ','select',Object.keys(EDU))],
+   build:v=>({lines:[['R','เภสัชกรผู้สอนการใช้ยาให้ผู้ป่วยกลุ่มเล็ก'],['T',`ทำโครงสไลด์สอนเรื่อง "${v.topic2}" จากแหล่งข้อมูลที่อัปโหลด`],['F','6 สไลด์ แต่ละสไลด์มีหัวข้อ ข้อความไม่เกิน 3 บรรทัด และคำแนะนำภาพประกอบ 1 ภาพ'],['X','ใช้เฉพาะเนื้อหาจากแหล่งข้อมูล ถ้าเนื้อหาไม่พอให้บอกว่าขาดอะไร']]}),
+   tip:'อัปโหลดเอกสาร 05 จากกลุ่ม LINE เป็นแหล่งข้อมูลก่อน แล้วค่อยวางคำสั่ง'}
+ ]},
+ {id:'song', time:'13.00', title:'เปลี่ยนกลอนเป็นเพลง', sub:'ทางเลือก ไม่บังคับ · วางกลอนแล้วแอปจะจัดเป็นท่อนเพลงให้เองโดยใช้คำเดิมทุกคำ · ต้องอายุ 18+ และเปิด "เก็บกิจกรรมไว้" · บางบัญชีได้เพลงสั้นราว 30 วินาที · ภาษาไทยยังไม่อยู่ในรายชื่อภาษาที่รองรับอย่างเป็นทางการ เสียงร้องอาจเพี้ยน', cards:[
+  {title:'สร้างเพลงจากกลอน (ร้องตามคำเดิม)', tool:['Gemini','สร้างเพลง'],
+   fields:[f('poem','วางกลอนของคุณ','textarea','(วางกลอนแปดจากช่วงเช้าตรงนี้ บรรทัดละ 1 หรือ 2 วรรค)'),
+     f('slen','ความยาวเพลง','select',['เต็มเพลง ร้องทั้งกลอน (1–2 นาที)','สั้น ร้องเฉพาะฮุก (ราว 30 วินาที)']),
+     f('genre','แนวเพลง','select',['ลูกทุ่งสนุก','ป๊อปสดใส','อะคูสติกอบอุ่น','แจ๊สเบา ๆ','ร็อกมีพลัง']),f('mood','อารมณ์','text','ภูมิใจ อบอุ่น'),
+     f('voice','เสียงร้อง','select',['เสียงร้องหญิง','เสียงร้องชาย'])],
+   build:v=>{const L=toLyrics(v.poem, !v.slen.startsWith('เต็ม'));
+    const style=['F',`แนว${v.genre} อารมณ์${v.mood} ${v.voice} ภาษาไทย จังหวะไม่เร็วเกินไปให้ฟังคำร้องชัด ความยาว${v.slen.startsWith('เต็ม')?'ราว 1–2 นาที':'ราว 30 วินาที'}`];
+    const rule=['X','ร้องตามเนื้อร้องด้านล่างคำต่อคำ ตามลำดับท่อน ห้ามแต่งเนื้อเพิ่ม ห้ามเปลี่ยนคำ ห้ามข้ามท่อน ช่วงอื่นให้เป็นดนตรีบรรเลง และไม่เลียนเสียงหรือสไตล์ของศิลปินคนใด'];
+    if(L.ok) return {lines:[['R','โปรดิวเซอร์เพลงที่ทำเพลงประจำตัวให้บุคลากรสุขภาพ'],['T','สร้างเพลงจากเนื้อร้องที่ให้มา'],style,rule,['D',`เนื้อร้อง:\n${L.text}`]]};
+    return {lines:[['R','โปรดิวเซอร์เพลงที่ทำเพลงประจำตัวให้บุคลากรสุขภาพ'],
+      ['T','จัดกลอนด้านล่างเป็นท่อนเพลงโดยใช้คำเดิมทุกคำ (บทแรกเป็น [Verse 1] สองวรรคก่อนสุดท้ายเป็น [Pre-Chorus] สองวรรคสุดท้ายเป็น [Chorus] ร้องซ้ำ 2 รอบ) แสดงเนื้อร้องให้ดูก่อน แล้วสร้างเพลง'],
+      style,rule,['D',`กลอน:\n${v.poem}`]]}},
+   tip:'แอปจัดท่อนให้เองเมื่อแยกวรรคได้ครบ 8 หรือ 12 วรรค (ดูในช่องข้อมูลได้) ถ้ายังได้เนื้อแปลกปลอม พิมพ์ต่อว่า "ร้องเฉพาะเนื้อที่ให้ไป ห้ามเพิ่มคำ" ถ้าเสียงร้องไทยไม่ชัด ให้สั่งเป็นดนตรีบรรเลงแล้วเปิดคู่กับกลอนบนจอ'},
+  {title:'ทางเลือก: เกลาคำบางจุดก่อนสร้างเพลง', tool:['Gemini'],
+   fields:[f('poem2','วางกลอนของคุณ','textarea','(วางกลอนแปดตรงนี้)')],
+   build:v=>({lines:[['R','นักแต่งเนื้อเพลงไทยที่เคารพถ้อยคำของกวี'],
+     ['T','ปรับกลอนด้านล่างให้ร้องได้ลื่นขึ้น โดยคงคำเดิมไว้ให้มากที่สุด แก้เฉพาะคำที่ร้องแล้วสะดุดจริง ๆ ไม่เกิน 3 จุดทั้งเพลง'],
+     ['F','บรรทัดละ 1 วรรค เรียงตามลำดับเดิม ใส่ป้ายท่อน [Verse 1] [Pre-Chorus] [Chorus] แสดงในกล่องข้อความเดียวพร้อมคัดลอก ใต้กล่องบอกว่าแก้คำไหน เป็นคำอะไร เพราะอะไร'],
+     ['X','ห้ามแต่งบรรทัดใหม่ ห้ามสรุปหรือยุบหลายวรรครวมกัน ห้ามใช้คำเกร่อ เช่น "ด้วยหัวใจ" ถ้าไม่ต้องแก้เลยให้บอกว่าไม่ต้องแก้'],
+     ['D',`กลอน:\n${v.poem2}`]]}),
+   tip:'ได้เนื้อแล้ว คัดลอกไปวางในช่อง "วางกลอนของคุณ" ของการ์ดด้านบน แอปจะใช้ป้ายท่อนตามที่ AI จัดมา'}
+ ]},
+ {id:'data', time:'13.15', title:'จากตาราง Excel สู่ Dashboard', sub:'ข้อมูลจำลองรวมอยู่ในคำสั่งแล้ว กดคัดลอกครั้งเดียววางได้เลย', cards:[
+  {title:'วิเคราะห์อัตรากำลังกับเวลารอรับยา', tool:['Gemini'], data:'staff',
+   build:()=>({lines:[['R','นักวิเคราะห์ข้อมูลงานบริการเภสัชกรรมผู้ป่วยนอก'],['T','วิเคราะห์ว่าช่วงไหนผู้ป่วยรอรับยานานที่สุด และสัมพันธ์กับจำนวนเภสัชกรหรือจำนวนใบสั่งยาอย่างไร เทียบวันจันทร์กับวันพฤหัสบดี'],['F','1) ตารางสรุปเวลารอเฉลี่ยรายช่วง 2) ข้อสังเกตสำคัญ 3 ข้อ 3) ตัวเลขที่ดูผิดปกติและควรตรวจซ้ำ 4) ข้อเสนอปรับอัตรากำลัง 2 ข้อ'],['X','คำนวณจากข้อมูลนี้เท่านั้น ห้ามเดาตัวเลขที่ไม่มี ถ้าพบข้อมูลผิดปกติให้แยกออกก่อนคำนวณและบอกว่าแยกตัวไหน'],['D',DATA.staff]]}),
+   tip:'ชิ้นงาน: กราฟ 1 รูป + ข้อสังเกต 3 ข้อ + ตัวเลข 1 ตัวที่จะไปตรวจซ้ำ มีโน้ตบุ๊ก อัปโหลดไฟล์ 01 ฉบับเต็ม 5 วันแทนได้'},
+  {title:'ทำเป็น Dashboard (Canvas)', tool:['Gemini','Canvas'], data:'staff',
+   build:()=>({lines:[['R','นักออกแบบ Dashboard สำหรับผู้บริหารฝ่ายเภสัชกรรม'],['T','ใช้ Canvas สร้าง Dashboard จากข้อมูลด้านล่าง'],['F','การ์ดตัวเลขสรุป 3 ใบ (ใบสั่งยารวม · เวลารอเฉลี่ย · ช่วงที่รอนานสุด) · กราฟเส้นเวลารอรายชั่วโมงแยกวัน · กราฟแท่งเภสัชกรเทียบใบสั่งยา · ภาษาไทยทั้งหมด'],['X','ใช้ตัวเลขจากข้อมูลนี้เท่านั้น ใส่หมายเหตุว่าเป็นข้อมูลจำลอง'],['D',DATA.staff]]}),
+   tip:'ถ้า Dashboard แสดงค่าแปลก ๆ ให้ถามต่อว่า "ตรวจตัวเลขในการ์ดกับข้อมูลต้นทางอีกครั้ง"'},
+  {title:'AI จัดระดับความคลาดเคลื่อนทางยา', tool:['Gemini'], data:'me',
+   build:()=>({lines:[['R','เภสัชกรผู้รับผิดชอบระบบความปลอดภัยด้านยา'],['T','จัดระดับความรุนแรงของความคลาดเคลื่อนทางยาทั้ง 15 เหตุการณ์ ตามเกณฑ์ NCC MERP ระดับ A–I'],['F','ตาราง 4 คอลัมน์: รหัส · ระดับ · เหตุผลสั้น ๆ · ความมั่นใจ (สูง/กลาง/ต่ำ) แล้วสรุปจำนวนแต่ละระดับ'],['X','ถ้าข้อมูลไม่พอจะตัดสิน ให้บอกว่าขาดข้อมูลอะไร ห้ามเดา'],['D',DATA.me]]}),
+   tip:'วิทยากรมีเฉลย เทียบกันว่า AI ตอบไม่ตรงกับเภสัชกรข้อไหน และเพราะอะไร'},
+  {title:'ถามต่อ: หาแนวทางป้องกัน', tool:['Gemini'],
+   build:()=>({lines:[['R','ผู้เชี่ยวชาญการวิเคราะห์หาสาเหตุรากเหง้า (RCA) ในงานเภสัชกรรม'],['T','จากตารางที่เพิ่งจัดระดับ เลือก 3 เหตุการณ์ที่รุนแรงที่สุด แล้ววิเคราะห์สาเหตุและแนวทางป้องกัน'],['F','แต่ละเหตุการณ์: สาเหตุที่เป็นไปได้ 3 ข้อ (คน/ระบบ/สิ่งแวดล้อม) · มาตรการป้องกัน 2 ข้อ · ตัวชี้วัด 1 ตัว'],['X','เน้นแก้ที่ระบบ ไม่กล่าวโทษบุคคล']]}),
+   tip:'วางต่อในแชตเดิมหลังจัดระดับเสร็จ'},
+  {title:'ถ้ามีเวลา: ยาใกล้หมดอายุ', tool:['Gemini'], data:'stock',
+   build:()=>({lines:[['R','เภสัชกรบริหารคลังเวชภัณฑ์'],['T','จากรายการยาคงคลัง ณ 16 ต.ค. 2569 หายาที่หมดอายุภายใน 6 เดือน และยาที่คาดว่าจะใช้ไม่ทันก่อนหมดอายุ'],['F','ตาราง: ยา · พอใช้กี่เดือน · เหลือกี่เดือนก่อนหมดอายุ · ส่วนเกิน (หน่วย) · มูลค่า (บาท) · ข้อเสนอ เช่น โอนย้าย หรือลดการสั่งซื้อ'],['X','แสดงสูตรที่ใช้คำนวณ ราคาเป็นค่าสมมติ'],['D',DATA.stock]]}),
+   tip:'สุ่มตรวจ 1 รายการด้วยเครื่องคิดเลขว่า AI คำนวณถูกไหม'}
+ ]},
+ {id:'c3', time:'14.05', title:'โจทย์ที่ 3 แอปของฉัน', sub:'เลือก 1 จาก 3 แบบ สร้างด้วย Canvas แล้วส่ง screenshot หรือคลิปหน้าจอ 10 วินาที', cards:[
+  {title:'แบบที่ 1 แอปเภสัชกรพยากรณ์', tool:['Gemini','Canvas'],
+   fields:[f('app','ชื่อแอป','text','เภสัชกรพยากรณ์'),f('col','โทนสี','text','ม่วงพาสเทล')],
+   build:v=>({lines:[['R','นักพัฒนาเว็บแอปที่ทำแอปสนุกสำหรับคนทำงานโรงพยาบาล'],['T',`ใช้ Canvas สร้างเว็บแอปชื่อ "${v.app}" กดปุ่มแล้วสุ่มคำทำนายประจำวันสำหรับเภสัชกร`],['F',`ภาษาไทย ใช้บนมือถือได้ · ปุ่มใหญ่ "ดูดวงวันนี้" · การ์ดแสดงดวงงาน ดวงเพื่อนร่วมงาน สีมงคล และคำคมกำลังใจ · โทน${v.col} · มีคำทำนายอย่างน้อย 20 แบบ`],['X','ใส่ข้อความเล็ก ๆ ว่า "เพื่อความบันเทิงเท่านั้น" ห้ามมีคำทำนายเรื่องสุขภาพหรือการรักษา']]})},
+  {title:'แบบที่ 2 แบบทดสอบความรู้ยา 5 ข้อ', tool:['Gemini','Canvas'],
+   fields:[f('qz','หัวข้อ','text','การใช้ยาพ่นสูด'),f('lvl','ผู้เล่น','select',['ผู้ป่วยทั่วไป','นักศึกษาเภสัชฝึกงาน','เจ้าหน้าที่ห้องยา'])],
+   build:v=>({lines:[['R','เภสัชกรผู้ออกแบบสื่อการเรียนรู้แบบเกม'],['T',`ใช้ Canvas สร้างแบบทดสอบเรื่อง "${v.qz}" สำหรับ${v.lvl}`],['F','5 ข้อ ข้อละ 4 ตัวเลือก ตอบแล้วขึ้นถูก/ผิดพร้อมคำอธิบายสั้น ๆ ทันที จบแล้วแสดงคะแนน · ภาษาไทย ใช้บนมือถือได้'],['X','ใช้ความรู้พื้นฐานที่เป็นที่ยอมรับ ห้ามระบุขนาดยาเฉพาะบุคคล หลังสร้างเสร็จ ให้สรุปคำถามและเฉลยเป็นข้อความให้ตรวจด้วย']]}),
+   tip:'อ่านเฉลยที่ AI สรุปให้ ถ้ามีข้อไหนไม่ถูก นั่นคือ "1 จุดที่ AI ผิด"'},
+  {title:'แบบที่ 3 เครื่องคำนวณเม็ดยาถึงวันนัด', tool:['Gemini','Canvas'],
+   build:()=>({lines:[['R','นักพัฒนาเครื่องมือช่วยงานห้องยา'],['T','ใช้ Canvas สร้างเครื่องคำนวณจำนวนเม็ดยาที่ต้องจ่ายให้พอถึงวันนัด'],['F','ช่องกรอก: วันที่จ่ายยา · วันนัด · ครั้งละกี่เม็ด · วันละกี่ครั้ง · จำนวนวันสำรอง · แสดงจำนวนวันและจำนวนเม็ดที่ต้องจ่าย พร้อมสูตรที่ใช้ · ภาษาไทย ใช้บนมือถือได้'],['X','ใส่ตัวอย่างทดสอบ 2 กรณีพร้อมคำตอบที่ถูกต้อง เพื่อให้ตรวจได้ว่าคำนวณถูก']]}),
+   tip:'ลองกรอกตัวเลขที่รู้คำตอบอยู่แล้วว่าแอปคำนวณถูกไหม'},
+  {title:'สำหรับผู้ที่อยากลอง: แอปค่าฝุ่นก่อนออกเวร', tool:['Gemini','Canvas','API'],
+   build:()=>({lines:[['R','นักพัฒนาเว็บแอปด้านสุขภาพ'],['T','ใช้ Canvas สร้างเว็บแอปชื่อ "ฝุ่นวันนี้ก่อนออกเวร" ดึงค่า PM2.5 ปัจจุบันของกรุงเทพฯ จาก API นี้: https://air-quality-api.open-meteo.com/v1/air-quality?latitude=13.7563&longitude=100.5018&current=pm2_5,us_aqi&hourly=pm2_5&timezone=Asia/Bangkok&forecast_days=1'],['F','การ์ดตัวเลข PM2.5 ตัวใหญ่ · คำแนะนำว่าควรใส่หน้ากากหรือไม่ · กราฟรายชั่วโมงวันนี้ · ภาษาไทย'],['X','ใส่ที่มุมล่างว่า "ข้อมูลจาก Open-Meteo / CAMS เป็นค่าพยากรณ์ ไม่ใช่สถานีวัด"']]}),
+   tip:'API ไม่ตอบ ให้ขอไฟล์ 04 ในกลุ่ม LINE แล้วสั่งว่า "ใช้ข้อมูลนี้แทนการดึง API"'}
+ ]},
+ {id:'work', time:'14.45', title:'งานประจำของฉัน AI ช่วยตรงไหน', sub:'แตกงานของตัวเอง 1 งาน ว่าส่วนไหน AI ช่วยได้ ส่วนไหนต้องให้เภสัชกรตรวจ', cards:[
+  {title:'บัตรงานของฉัน', tool:['Gemini'],
+   fields:[f('task','งานประจำ 1 งาน','text','ทำรายงานสถิติการจ่ายยาประจำเดือน'),f('freq','ทำบ่อยแค่ไหน','text','เดือนละครั้ง'),f('min','ใช้เวลาครั้งละ','text','ประมาณ 3 ชั่วโมง')],
+   build:v=>({lines:[['R','ที่ปรึกษาด้านการปรับปรุงกระบวนงานในฝ่ายเภสัชกรรมโรงพยาบาล'],['T',`แตกงาน "${v.task}" (ทำ${v.freq} ใช้เวลา${v.min}) ออกเป็นขั้นตอน แล้วบอกว่าขั้นไหน AI ช่วยได้`],['F','ตาราง: ขั้นตอน · AI ช่วยได้ไหม (ได้/บางส่วน/ไม่ได้) · ขั้นที่คนต้องตรวจ · ข้อมูลที่ห้ามใส่ AI · ตามด้วยคำสั่ง R–T–F ตัวอย่าง 1 คำสั่งสำหรับขั้นที่ AI ช่วยได้มากที่สุด และประมาณเวลาที่น่าจะลดได้'],['X','ถ้าไม่รู้รายละเอียดงาน ให้ถามกลับไม่เกิน 3 คำถามก่อนตอบ']]}),
+   tip:'นี่คือชิ้นงานที่เอากลับไปใช้ได้จริงที่สุดของวัน'}
+ ]},
+ {id:'plan', time:'15.15', title:'แผนลองใช้จริง 7 วัน', sub:'', cards:[
+  {title:'แผน 7 วัน วันละ 10 นาที', tool:['Gemini'],
+   fields:[f('goal','อยากใช้ AI ช่วยเรื่องอะไร','text','ทำสไลด์นำเสนอผลงานให้เร็วขึ้น')],
+   build:v=>({lines:[['R','โค้ชการใช้ AI สำหรับบุคลากรสุขภาพที่ยุ่งมาก'],['T',`ทำแผนฝึกใช้ AI 7 วัน วันละ 10 นาที เพื่อ${v.goal}`],['F','ตาราง 7 แถว: วัน · สิ่งที่ลอง · คำสั่ง R–T–F ที่ใช้ได้ทันที · วิธีเช็กว่าทำสำเร็จ'],['X','ห้ามมีขั้นที่ต้องใช้ข้อมูลผู้ป่วยจริง ใช้เครื่องมือฟรีเป็นหลัก']]})}
+ ]},
+];
+
+const NAMES = {R:'บทบาท (Role)',T:'งาน (Task)',F:'รูปแบบผลลัพธ์ (Format)',X:'ข้อกำหนดเพิ่มเติม',D:'ข้อมูล'};
+const store = {get(k){try{return JSON.parse(localStorage.getItem('aipg-'+k))}catch(e){return null}}, set(k,v){try{localStorage.setItem('aipg-'+k,JSON.stringify(v))}catch(e){}}};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toText = lines => lines.map(([k,v]) => `${NAMES[k]}: ${v}`).join('\n\n');
+
+async function copyText(text, btn, holder){
+  const done = holder.querySelector('.done');
+  try { await navigator.clipboard.writeText(text); done.textContent = 'คัดลอกแล้ว วางใน Gemini ได้เลย'; }
+  catch(e){
+    let ta = holder.querySelector('textarea.fallback');
+    if(!ta){ ta = document.createElement('textarea'); ta.className='fallback'; ta.readOnly = true; holder.after(ta); }
+    ta.value = text; ta.focus(); ta.select();
+    done.textContent = 'คัดลอกอัตโนมัติไม่ได้ ข้อความถูกเลือกไว้แล้ว กดค้างแล้วเลือก "คัดลอก"';
+  }
+  setTimeout(()=>{ done.textContent=''; }, 4000);
+}
+
+function renderCard(seg, card, ci){
+  const key = `${seg.id}-${ci}`;
+  const saved = store.get(key) || {};
+  const el = document.createElement('article'); el.className='card';
+  const vals = {};
+  (card.fields||[]).forEach(fd => { vals[fd.id] = saved[fd.id] ?? (fd.type==='select' ? fd.opts[0] : (fd.type==='textarea' ? '' : fd.opts)); });
+  el.innerHTML = `<div><h3>${esc(card.title)}</h3></div>
+    <div class="tags">${card.tool.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    ${card.fields ? `<div class="fields">${card.fields.map(fd => {
+      const id = `${key}-${fd.id}`;
+      if(fd.type==='select') return `<label for="${id}">${esc(fd.label)}<select id="${id}" data-f="${fd.id}">${fd.opts.map(o=>`<option${o===vals[fd.id]?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
+      if(fd.type==='textarea') return `<label class="wide" for="${id}">${esc(fd.label)}<textarea id="${id}" data-f="${fd.id}" rows="4" placeholder="${esc(fd.opts)}">${esc(vals[fd.id])}</textarea></label>`;
+      return `<label for="${id}">${esc(fd.label)}<input id="${id}" data-f="${fd.id}" value="${esc(vals[fd.id])}"></label>`;
+    }).join('')}</div>` : ''}
+    <div class="label"></div>
+    <div class="actions"><button class="copy main" type="button">คัดลอกคำสั่ง</button>${card.extra?`<button class="copy alt" type="button">${esc(card.extra.label)}</button>`:''}<span class="done" aria-live="polite"></span></div>
+    ${card.tip?`<p class="tip">${esc(card.tip)}</p>`:''}`;
+  const labelBox = el.querySelector('.label');
+  const draw = () => {
+    const {lines} = card.build(vals);
+    labelBox.innerHTML = lines.map(([k,v]) => {
+      if(k==='D'){ const first = v.split('\n')[0]; const n = v.split('\n').length; return `<details class="data"><summary>รวมข้อมูลไว้ในคำสั่งแล้ว (${n} บรรทัด) แตะเพื่อดู</summary><pre>${esc(v)}</pre></details>`; }
+      return `<div class="ln ${k}"><span class="k">${k==='X'?'+':k}</span><div class="v"><small>${NAMES[k]}</small>${esc(v)}</div></div>`;
+    }).join('');
+  };
+  draw();
+  el.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('input', () => { vals[inp.dataset.f] = inp.value || (inp.placeholder||''); store.set(key, vals); draw(); }));
+  const holder = el.querySelector('.actions');
+  el.querySelector('.copy.main').addEventListener('click', e => copyText(toText(card.build(vals).lines), e.currentTarget, holder));
+  if(card.extra) el.querySelector('.copy.alt').addEventListener('click', e => copyText(card.extra.build ? card.extra.build(vals) : card.extra.text, e.currentTarget, holder));
+  return el;
+}
+
+const app = document.getElementById('app'), strip = document.getElementById('strip');
+SEGMENTS.forEach(seg => {
+  const s = document.createElement('section'); s.className='seg'; s.id = seg.id;
+  s.innerHTML = `<div class="seg-head"><span class="time">${seg.time}</span><h2>${esc(seg.title)}</h2></div>${seg.sub?`<p class="seg-sub">${esc(seg.sub)}</p>`:''}`;
+  seg.cards.forEach((c,i) => s.appendChild(renderCard(seg, c, i)));
+  app.appendChild(s);
+  const a = document.createElement('a'); a.href = '#'+seg.id; a.textContent = `${seg.time} ${seg.title.replace(/^โจทย์ที่ (\d).*/,'โจทย์ $1')}`; strip.appendChild(a);
+});
+</script>
