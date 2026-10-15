@@ -346,7 +346,6 @@ function renderCard(seg, card, ci){
   (card.fields||[]).forEach(fd => { vals[fd.id] = saved[fd.id] ?? (fd.type==='select' ? fd.opts[0] : (fd.type==='textarea' ? '' : fd.opts)); });
   el.innerHTML = `<div><h3>${esc(card.title)}</h3></div>
     <div class="tags">${card.unit?`<span class="tag unit">${esc(card.unit)}</span>`:''}${card.tool.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
-    ${card.link?`<a class="doclink" href="${esc(card.link.url)}" target="_blank" rel="noopener"><span>${esc(card.link.label)}<small>${esc(card.link.note||'')}</small></span><span aria-hidden="true">↗</span></a>`:''}
     ${card.fields ? `<div class="fields">${card.fields.map(fd => {
       const id = `${key}-${fd.id}`;
       if(fd.type==='select') return `<label for="${id}">${esc(fd.label)}<select id="${id}" data-f="${fd.id}">${fd.opts.map(o=>`<option${o===vals[fd.id]?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
@@ -354,6 +353,7 @@ function renderCard(seg, card, ci){
       return `<label for="${id}">${esc(fd.label)}<input id="${id}" data-f="${fd.id}" value="${esc(vals[fd.id])}"></label>`;
     }).join('')}</div>` : ''}
     <div class="label"></div>
+    ${card.link?`<a class="doclink" href="${esc(card.link.url)}" target="_blank" rel="noopener"><span>${esc(card.link.label)}<small>${esc(card.link.note||'')}</small></span><span aria-hidden="true">↗</span></a>`:''}
     <div class="actions"><button class="copy main" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>คัดลอกคำสั่ง</button>${card.extra?`<button class="copy alt" type="button">${esc(card.extra.label)}</button>`:''}<span class="done" aria-live="polite"></span></div>
     ${card.tip?`<p class="tip">${esc(card.tip)}</p>`:''}${card.check?`<p class="tip chk">${esc(card.check)}</p>`:''}`;
   const labelBox = el.querySelector('.label');
