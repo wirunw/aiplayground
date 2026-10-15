@@ -101,6 +101,12 @@ button.copy.alt{background:transparent;color:var(--navy);border:1.5px solid var(
 .done:empty{display:none}
 .tip{font-size:.88rem;color:var(--muted);margin:0;padding:10px 12px;border-radius:10px;background:var(--honey-soft)}
 .tip::before{content:"เคล็ดลับ ";font-weight:600;color:var(--honey-ink)}
+.tip.chk{background:var(--soft)}
+.tip.chk::before{content:"วิธีตรวจคำตอบ ";color:var(--accent)}
+.tag.unit{background:var(--honey-soft);color:var(--honey-ink);font-weight:600}
+a.crosslink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--navy);color:var(--navy-ink);text-decoration:none;font-family:var(--display);font-weight:600;min-height:52px}
+a.crosslink small{display:block;font-family:var(--body);font-weight:400;opacity:.8;font-size:.85rem}
+a.crosslink .arr{font-size:1.4rem}
 textarea.fallback{width:100%;font:inherit;font-size:.85rem;min-height:120px;border:1px solid var(--accent);border-radius:8px;padding:8px;background:var(--paper);color:var(--ink)}
 @media (max-width:520px){
   .actions button.copy{flex:1 1 100%;justify-content:center}
@@ -138,6 +144,8 @@ footer.fine{margin-top:14px;color:var(--muted);font-size:.82rem;text-align:cente
   <div class="rule"><b>ส่งผลงานในกลุ่มแชตของห้องให้ครบ 3 อย่าง</b> ผลงาน (screenshot) · คำสั่งที่ใช้ · 1 จุดที่ AI ทำผิดหรือต้องแก้</div>
   <div class="rule warn"><b>ห้ามใส่ข้อมูลผู้ป่วยจริง</b> ข้อมูลทุกชุดในหน้านี้เป็นข้อมูลจำลอง ถ้าจะลองกับงานของตัวเอง ให้ตัดชื่อ HN เลขบัตร และรายละเอียดที่ระบุตัวบุคคลออกก่อนทุกครั้ง</div>
 </div>
+
+<a class="crosslink" href="https://wirunw.github.io/aiplayground/work/"><span>คลังคำสั่งสำหรับงานประจำ<small>สรุปเอกสาร วางแผน QI วิเคราะห์ข้อมูล ใช้ต่อได้หลังวันอบรม</small></span><span class="arr" aria-hidden="true">→</span></a>
 
 <nav class="strip" id="strip" aria-label="กิจกรรม"></nav>
 <main id="app"></main>
@@ -336,7 +344,7 @@ function renderCard(seg, card, ci){
   const vals = {};
   (card.fields||[]).forEach(fd => { vals[fd.id] = saved[fd.id] ?? (fd.type==='select' ? fd.opts[0] : (fd.type==='textarea' ? '' : fd.opts)); });
   el.innerHTML = `<div><h3>${esc(card.title)}</h3></div>
-    <div class="tags">${card.tool.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    <div class="tags">${card.unit?`<span class="tag unit">${esc(card.unit)}</span>`:''}${card.tool.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
     ${card.fields ? `<div class="fields">${card.fields.map(fd => {
       const id = `${key}-${fd.id}`;
       if(fd.type==='select') return `<label for="${id}">${esc(fd.label)}<select id="${id}" data-f="${fd.id}">${fd.opts.map(o=>`<option${o===vals[fd.id]?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
@@ -345,7 +353,7 @@ function renderCard(seg, card, ci){
     }).join('')}</div>` : ''}
     <div class="label"></div>
     <div class="actions"><button class="copy main" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>คัดลอกคำสั่ง</button>${card.extra?`<button class="copy alt" type="button">${esc(card.extra.label)}</button>`:''}<span class="done" aria-live="polite"></span></div>
-    ${card.tip?`<p class="tip">${esc(card.tip)}</p>`:''}`;
+    ${card.tip?`<p class="tip">${esc(card.tip)}</p>`:''}${card.check?`<p class="tip chk">${esc(card.check)}</p>`:''}`;
   const labelBox = el.querySelector('.label');
   const draw = () => {
     const {lines} = card.build(vals);
