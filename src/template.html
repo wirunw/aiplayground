@@ -101,6 +101,8 @@ button.copy.alt{background:transparent;color:var(--navy);border:1.5px solid var(
 a.crosslink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:14px 16px;border-radius:12px;background:var(--navy);color:var(--navy-ink);text-decoration:none;font-family:var(--display);font-weight:600;min-height:52px}
 a.crosslink small{display:block;font-family:var(--body);font-weight:400;opacity:.8;font-size:.85rem}
 a.crosslink .arr{font-size:1.4rem}
+a.doclink{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--navy);color:var(--navy);text-decoration:none;font-weight:600;min-height:48px}
+a.doclink small{display:block;font-weight:400;color:var(--muted);font-size:.82rem}
 textarea.fallback{width:100%;font:inherit;font-size:.85rem;min-height:120px;border:1px solid var(--accent);border-radius:8px;padding:8px;background:var(--paper);color:var(--ink)}
 @media (max-width:520px){
   .actions button.copy{flex:1 1 100%;justify-content:center}
@@ -337,6 +339,7 @@ function renderCard(seg, card, ci){
   (card.fields||[]).forEach(fd => { vals[fd.id] = saved[fd.id] ?? (fd.type==='select' ? fd.opts[0] : (fd.type==='textarea' ? '' : fd.opts)); });
   el.innerHTML = `<div><h3>${esc(card.title)}</h3></div>
     <div class="tags">${card.unit?`<span class="tag unit">${esc(card.unit)}</span>`:''}${card.tool.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    ${card.link?`<a class="doclink" href="${esc(card.link.url)}" target="_blank" rel="noopener"><span>${esc(card.link.label)}<small>${esc(card.link.note||'')}</small></span><span aria-hidden="true">↗</span></a>`:''}
     ${card.fields ? `<div class="fields">${card.fields.map(fd => {
       const id = `${key}-${fd.id}`;
       if(fd.type==='select') return `<label for="${id}">${esc(fd.label)}<select id="${id}" data-f="${fd.id}">${fd.opts.map(o=>`<option${o===vals[fd.id]?' selected':''}>${esc(o)}</option>`).join('')}</select></label>`;
